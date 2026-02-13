@@ -48,7 +48,7 @@ export default function App() {
   return (
     <div className="w-screen h-screen flex bg-gray-50">
       {/* Main canvas */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative h-full">
         {/* Title */}
         <div className="absolute top-4 left-4 z-10 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 px-4 py-2">
           <h1 className="text-base font-bold text-gray-800">BikeTime Rental — Procesní model</h1>
