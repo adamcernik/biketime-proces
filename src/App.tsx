@@ -1,19 +1,85 @@
-import { ReactFlow, Background, BackgroundVariant } from '@xyflow/react';
+import { useCallback, useState } from 'react';
+import {
+  ReactFlow,
+  Background,
+  BackgroundVariant,
+  type Node,
+  useNodesState,
+  useEdgesState,
+} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-const nodes = [
-  { id: '1', position: { x: 0, y: 0 }, data: { label: 'Test Node 1' } },
-  { id: '2', position: { x: 200, y: 100 }, data: { label: 'Test Node 2' } },
-];
+import { ProcessNode } from './nodes/ProcessNode';
+import { DecisionNode } from './nodes/DecisionNode';
+import { ActorNode } from './nodes/ActorNode';
+import { NoteNode } from './nodes/NoteNode';
+import { LabeledEdge } from './edges/LabeledEdge';
 
-const edges = [{ id: 'e1-2', source: '1', target: '2' }];
+import { Sidebar } from './components/Sidebar';
+import { Legend } from './components/Legend';
+import { Toolbar } from './components/Toolbar';
+
+import { initialNodes, initialEdges } from './data/btr-main-process';
+
+const nodeTypes = {
+  process: ProcessNode,
+  decision: DecisionNode,
+  actor: ActorNode,
+  note: NoteNode,
+};
+
+const edgeTypes = {
+  labeled: LabeledEdge,
+};
 
 export default function App() {
+  const [nodes, , onNodesChange] = useNodesState(initialNodes);
+  const [edges, , onEdgesChange] = useEdgesState(initialEdges);
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+
+  const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
+    setSelectedNode(node);
+  }, []);
+
+  const onPaneClick = useCallback(() => {
+    setSelectedNode(null);
+  }, []);
+
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
-      <ReactFlow nodes={nodes} edges={edges} fitView>
-        <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
-      </ReactFlow>
+    <div style={{ width: '100vw', height: '100vh', display: 'flex' }} className="bg-gray-50">
+      {/* Main canvas */}
+      <div style={{ flex: 1, position: 'relative', height: '100%' }}>
+        {/* Title */}
+        <div className="absolute top-4 left-4 z-10 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 px-4 py-2">
+          <h1 className="text-base font-bold text-gray-800">BikeTime Rental — Procesní model</h1>
+          <p className="text-xs text-gray-500">B2B SaaS platforma pro pronájem elektrokol</p>
+        </div>
+
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          onNodeClick={onNodeClick}
+          onPaneClick={onPaneClick}
+          fitView
+          fitViewOptions={{ padding: 0.15 }}
+          defaultEdgeOptions={{
+            type: 'smoothstep',
+            style: { stroke: '#9CA3AF', strokeWidth: 1.5 },
+          }}
+          proOptions={{ hideAttribution: true }}
+        >
+          <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#D1D5DB" />
+          <Toolbar />
+          <Legend />
+        </ReactFlow>
+      </div>
+
+      {/* Sidebar */}
+      <Sidebar node={selectedNode} onClose={() => setSelectedNode(null)} />
     </div>
   );
 }
